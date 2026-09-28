@@ -225,6 +225,16 @@
 
 <script>
 /* ---------- Default placeholder data (overridden by edit.html) ---------- */
+const normalizePhotoPath = value => {
+  if (!value || typeof value !== 'string') return '';
+  const cleaned = value.replace(/\\/g, '/').trim();
+  if (!cleaned) return '';
+  if (/^[a-zA-Z]:\//.test(cleaned) || /^file:\//i.test(cleaned)) {
+    return cleaned.split('/').pop() || '';
+  }
+  return cleaned.replace(/^\/+/, '');
+};
+
 const STORAGE_KEY = 'profile-card';
 const DEFAULTS = {
   name: 'Engr. Roland Paul V. Tamayo, PAFR, ME, MBA',
@@ -242,7 +252,7 @@ const DEFAULTS = {
   contact3Value: '+63 917 568 4262',
   address: 'Alabang-Zapote Road, Pamplona 3, Las Piñas City, Philippines 1740',
   email: 'engr_rptamayo@yahoo.com',
-  photo: 'D:/xampp/project1/University_of_Perpetual_Help_System_DALTA_logo.png',
+  photo: 'University_of_Perpetual_Help_System_DALTA_logo.png',
   social: {
     facebook: '',
     instagram: '',
@@ -261,11 +271,17 @@ function loadProfile() {
   })();
 
   const finalProfile = saved && typeof saved === 'object'
-    ? { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } }
-    : DEFAULTS;
+    ? { ...DEFAULTS, ...saved, photo: normalizePhotoPath(saved.photo || DEFAULTS.photo), social: { ...DEFAULTS.social, ...(saved.social || {}) } }
+    : { ...DEFAULTS, photo: normalizePhotoPath(DEFAULTS.photo) };
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS));
-  return DEFAULTS;
+  const cleanProfile = {
+    ...finalProfile,
+    photo: normalizePhotoPath(finalProfile.photo || DEFAULTS.photo),
+    social: { ...DEFAULTS.social, ...(finalProfile.social || {}) }
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanProfile));
+  return cleanProfile;
 }
 const PROFILE = loadProfile();
 const photoEl = document.getElementById('photo');
