@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edit profile</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#5a0712">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -105,6 +109,7 @@
     <div class="actions">
       <p class="msg" id="msg" role="status"></p>
       <button class="save" type="submit">Save changes</button>
+      <button class="save" type="button" id="exportBtn" style="background: #2a0a0d;">Export as standalone HTML</button>
       <a class="cancel" href="index.html">Cancel</a>
     </div>
   </form>
@@ -222,6 +227,104 @@ document.getElementById('form').addEventListener('submit', e => {
     document.getElementById('msg').textContent = "Couldn't save. Allow site storage in this browser and try again.";
   }
 });
+
+/* Export as standalone HTML file */
+async function fetchAsBase64(url) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function generateStandaloneHTML() {
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('exportBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  msg.textContent = '';
+
+  try {
+    // Fetch index.html template
+    const indexRes = await fetch('/index.html');
+    let indexHTML = await indexRes.text();
+
+    // Get current profile data
+    const profile = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const fullProfile = { ...DEFAULTS, ...profile, social: { ...DEFAULTS.social, ...(profile.social || {}) } };
+
+    // Convert photo to base64 if it's a local file or data URL
+    let photoData = fullProfile.photo || DEFAULTS.photo;
+    if (photoData && !photoData.startsWith('data:') && !photoData.startsWith('http')) {
+      // Try to fetch local image
+      const base64 = await fetchAsBase64('/' + photoData);
+      if (base64) photoData = 'data:image/png;base64,' + base64;
+    } else if (photoData.startsWith('http')) {
+      // Fetch external image as base64
+      const base64 = await fetchAsBase64(photoData);
+      if (base64) {
+        const ext = photoData.split('.').pop().split('?')[0];
+        photoData = 'data:image/' + (ext === 'svg' ? 'svg+xml' : ext) + ';base64,' + base64;
+      }
+    }
+
+    // Replace the default photo in DEFAULTS with the actual photo data
+    const profileWithPhoto = { ...fullProfile, photo: photoData };
+
+    // Inject profile data into the HTML
+    const dataScript = `
+<script>
+/* ---------- Embedded Profile Data ---------- */
+const STORAGE_KEY = 'profile-card';
+const EMBEDDED_PROFILE = ${JSON.stringify(profileWithPhoto, null, 2)};
+localStorage.setItem(STORAGE_KEY, JSON.stringify(EMBEDDED_PROFILE));
+const DEFAULTS = EMBEDDED_PROFILE;
+</script>`;
+
+    // Insert before the closing </script> tag of the inline script
+    indexHTML = indexHTML.replace('</script></body>', dataScript + '</script></body>');
+
+    // Also update the title
+    indexHTML = indexHTML.replace('<title>Profile</title>', `<title>${fullProfile.name} - Profile</title>`);
+
+    // Create download
+    const blob = new Blob([indexHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fullProfile.name.replace(/[^a-z0-9]/gi, '_')}_profile.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    msg.textContent = 'Exported! Open the .html file on any device — works offline.';
+    msg.style.color = '#2e7d32';
+  } catch (err) {
+    msg.textContent = 'Export failed: ' + err.message;
+    msg.style.color = '#ff8a8a';
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('exportBtn').addEventListener('click', generateStandaloneHTML);
+
+/* Service Worker registration for offline support */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

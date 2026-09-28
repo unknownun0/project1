@@ -1,0 +1,29 @@
+{
+  "name": "Profile Card",
+  "short_name": "Profile",
+  "description": "Offline-capable digital profile card",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f7f0f1",
+  "theme_color": "#5a0712",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Edit Profile",
+      "short_name": "Edit",
+      "description": "Edit your profile information",
+      "url": "/edit.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>" }]
+    }
+  ]
+}
