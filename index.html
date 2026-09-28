@@ -199,9 +199,9 @@
       </div>
 
       <div class="stats">
-        <div class="stat"><b id="companyStatA">University of Perpetual Help</b><span>Institution</span></div>
-        <div class="stat"><b id="companyStatB">Campus</b><span>Network</span></div>
-        <div class="stat"><b id="companyStatC">Education</b><span>Community</span></div>
+        <div class="stat"><b id="companyStatA">University of Perpetual Help</b><span>Company</span></div>
+        <div class="stat"><b id="companyStatB">University</b><span>Campus</span></div>
+        <div class="stat"><b id="companyStatC">Help</b><span>Network</span></div>
       </div>
 
       <button class="follow" id="follow" type="button" aria-pressed="false">Message</button>
@@ -355,18 +355,17 @@ document.getElementById('heroName').textContent = P.name;
 document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
 
 const companyName = P.company || 'University of Perpetual Help';
-const companyPieces = companyName.split(/\s+/).filter(Boolean);
 document.getElementById('companyStatA').textContent = companyName;
-document.getElementById('companyStatB').textContent = companyPieces[0] || 'University';
-document.getElementById('companyStatC').textContent = companyPieces.slice(-1)[0] || 'Help';
+document.getElementById('companyStatB').textContent = 'Company';
+document.getElementById('companyStatC').textContent = 'Name';
 
 document.getElementById('details').append(
   row({ icon: 'user',    label: 'Name',           value: P.name }),
   row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
   row({ icon: 'job',     label: 'Position',       value: P.position }),
-  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value, href: 'tel:' + digits(P.contact1Value) }),
-  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value, href: 'tel:' + digits(P.contact2Value) }),
-  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value, href: 'tel:' + digits(P.contact3Value) }),
+  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
+  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
+  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
   row({ icon: 'company', label: 'Company',        value: P.company }),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
