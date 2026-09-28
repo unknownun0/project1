@@ -114,7 +114,11 @@
 const STORAGE_KEY = 'profile-card';
 const DEFAULTS = {
   name: 'Full Name', nickname: 'Nickname', position: 'Job Title',
-  phone: '+00 000 0000', phone2: '+00 000 0000', company: 'Company Name',
+  phone: '+00 000 0000', phone2: '+00 000 0000', company: 'University of Perpetual Help',
+  bio: 'Write a short bio about yourself or the organization.',
+  contact1Label: 'Mobile', contact1Value: '+00 000 0000',
+  contact2Label: 'Office', contact2Value: '+00 000 0000',
+  contact3Label: 'Emergency', contact3Value: '+00 000 0000',
   address: 'Full Address', email: 'name@gmail.com', photo: '',
   social: {
     facebook: '@handle', instagram: '@handle', linkedin: 'https://linkedin.com/in/profile',
@@ -124,8 +128,12 @@ const DEFAULTS = {
 
 const DETAIL_FIELDS = [
   ['name', 'Name', 'text'], ['nickname', 'Nickname', 'text'], ['position', 'Position', 'text'],
-  ['phone', 'Contact number', 'tel'], ['phone2', 'Other number', 'tel'], ['company', 'Company', 'text'],
-  ['address', 'Address', 'text'], ['email', 'Gmail', 'email']
+  ['phone', 'Primary contact', 'tel'], ['phone2', 'Secondary contact', 'tel'],
+  ['company', 'Company', 'text'], ['address', 'Address', 'text'], ['email', 'Gmail', 'email'],
+  ['contact1Label', 'Contact 1 label', 'text'], ['contact1Value', 'Contact 1 number', 'tel'],
+  ['contact2Label', 'Contact 2 label', 'text'], ['contact2Value', 'Contact 2 number', 'tel'],
+  ['contact3Label', 'Contact 3 label', 'text'], ['contact3Value', 'Contact 3 number', 'tel'],
+  ['bio', 'Bio', 'textarea']
 ];
 const SOCIAL_FIELDS = [
   ['facebook', 'Facebook'], ['instagram', 'Instagram'], ['linkedin', 'LinkedIn'], ['wechat', 'WeChat'],
@@ -175,6 +183,23 @@ function field(name, label, type, value) {
   const input = wrap.querySelector('input');
   input.name = name; input.type = type; input.value = value || '';
   input.autocapitalize = 'off'; input.spellcheck = false;
+  if (type === 'textarea') {
+    const textarea = document.createElement('textarea');
+    textarea.name = name;
+    textarea.value = value || '';
+    textarea.rows = 4;
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '120px';
+    textarea.style.padding = '14px 18px';
+    textarea.style.borderRadius = '16px';
+    textarea.style.border = '0';
+    textarea.style.background = 'rgba(122,13,29,.06)';
+    textarea.style.color = '#2a0a0d';
+    textarea.style.font = 'inherit';
+    textarea.style.resize = 'vertical';
+    wrap.replaceChild(textarea, input);
+    return wrap;
+  }
   return wrap;
 }
 

@@ -96,17 +96,17 @@
   .glass.pill svg { width: 16px; height: 16px; }
 
   .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 24px 40px; z-index: 2; }
-  .name { margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
-  .handle { margin-top: 6px; display: flex; align-items: center; gap: 6px; color: #9a97a6; font-size: 14px; }
+  .name { margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; text-align: center; }
+  .handle { margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #9a97a6; font-size: 14px; }
   .badge { width: 18px; height: 18px; }
 
   .stats {
     margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr);
     background: rgba(255,255,255,.08); border-radius: 20px; padding: 14px 0;
   }
-  .stat { text-align: center; }
+  .stat { text-align: center; padding: 0 8px; }
   .stat + .stat { border-left: 1px solid rgba(255,255,255,.1); }
-  .stat b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .stat b { display: block; font-size: 18px; line-height: 1.2; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
   .stat span { display: block; margin-top: 2px; font-size: 12px; color: #d8c5c8; }
 
   .follow {
@@ -199,9 +199,9 @@
       </div>
 
       <div class="stats">
-        <div class="stat"><b id="companyStatA">Company</b><span>Brand</span></div>
-        <div class="stat"><b id="companyStatB">Name</b><span>Studio</span></div>
-        <div class="stat"><b id="companyStatC">Co.</b><span>Label</span></div>
+        <div class="stat"><b id="companyStatA">University of Perpetual Help</b><span>Institution</span></div>
+        <div class="stat"><b id="companyStatB">Campus</b><span>Network</span></div>
+        <div class="stat"><b id="companyStatC">Education</b><span>Community</span></div>
       </div>
 
       <button class="follow" id="follow" type="button" aria-pressed="false">Message</button>
@@ -234,7 +234,14 @@ const DEFAULTS = {
   position: 'Job Title',
   phone: '+00 000 0000',
   phone2: '+00 000 0000',
-  company: 'Company Name',
+  company: 'University of Perpetual Help',
+  bio: 'Write a short bio about yourself or the organization.',
+  contact1Label: 'Mobile',
+  contact1Value: '+00 000 0000',
+  contact2Label: 'Office',
+  contact2Value: '+00 000 0000',
+  contact3Label: 'Emergency',
+  contact3Value: '+00 000 0000',
   address: 'Full Address',
   email: 'name@gmail.com',
   photo: '',
@@ -347,22 +354,24 @@ const P = PROFILE, S = PROFILE.social;
 document.getElementById('heroName').textContent = P.name;
 document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
 
-const companyName = P.company || 'Company Name';
+const companyName = P.company || 'University of Perpetual Help';
 const companyPieces = companyName.split(/\s+/).filter(Boolean);
-document.getElementById('companyStatA').textContent = companyPieces[0] || companyName;
-document.getElementById('companyStatB').textContent = companyPieces.slice(0, 2).join(' ') || companyName;
-document.getElementById('companyStatC').textContent = companyPieces.slice(-1)[0] || 'Co.';
+document.getElementById('companyStatA').textContent = companyName;
+document.getElementById('companyStatB').textContent = companyPieces[0] || 'University';
+document.getElementById('companyStatC').textContent = companyPieces.slice(-1)[0] || 'Help';
 
 document.getElementById('details').append(
   row({ icon: 'user',    label: 'Name',           value: P.name }),
   row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
   row({ icon: 'job',     label: 'Position',       value: P.position }),
-  row({ icon: 'phone',   label: 'Contact number', value: P.phone,  href: 'tel:' + digits(P.phone) }),
-  row({ icon: 'phone',   label: 'Other number',   value: P.phone2, href: 'tel:' + digits(P.phone2) }),
+  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value, href: 'tel:' + digits(P.contact1Value) }),
+  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value, href: 'tel:' + digits(P.contact2Value) }),
+  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value, href: 'tel:' + digits(P.contact3Value) }),
   row({ icon: 'company', label: 'Company',        value: P.company }),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email })
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
+  row({ icon: 'user',    label: 'Bio',            value: P.bio })
 );
 
 document.getElementById('socials').append(
