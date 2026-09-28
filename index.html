@@ -242,7 +242,7 @@ const DEFAULTS = {
   contact3Value: '+63 917 568 4262',
   address: 'Alabang-Zapote Road, Pamplona 3, Las Piñas City, Philippines 1740',
   email: 'engr_rptamayo@yahoo.com',
-  photo: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/UPHSD_Logo.png',
+  photo: 'D:/xampp/project1/University_of_Perpetual_Help_System_DALTA_logo.png',
   social: {
     facebook: '',
     instagram: '',
@@ -364,26 +364,20 @@ document.getElementById('companyStatA').textContent = companyName;
 
 document.getElementById('details').append(
   row({ icon: 'user',    label: 'Name',           value: P.name }),
+  row({ icon: 'user',    label: 'Bio',            value: P.bio }),
   row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
+  row({ icon: 'company', label: 'Company',        value: P.company }),
   row({ icon: 'job',     label: 'Position',       value: P.position }),
   row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
   row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
   row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
-  row({ icon: 'company', label: 'Company',        value: P.company }),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
-  row({ icon: 'user',    label: 'Bio',            value: P.bio })
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email })
 );
 
 const socialEntries = [
-  S.facebook ? row({ icon: 'facebook', label: 'Facebook', value: S.facebook, href: 'https://facebook.com/' + strip(S.facebook) }) : null,
-  S.instagram ? row({ icon: 'instagram', label: 'Instagram', value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }) : null,
-  S.linkedin ? row({ icon: 'linkedin', label: 'LinkedIn', value: S.linkedin, href: url(S.linkedin) }) : null,
   S.wechat ? row({ icon: 'wechat', label: 'WeChat', value: S.wechat, action: el => shareOrCopy(el, S.wechat) }) : null,
-  S.whatsapp ? row({ icon: 'whatsapp', label: 'WhatsApp', value: S.whatsapp, href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }) : null,
-  S.telegram ? row({ icon: 'telegram', label: 'Telegram', value: S.telegram, href: 'https://t.me/' + strip(S.telegram) }) : null,
-  S.other ? row({ icon: 'link', label: 'Other link', value: S.other, href: url(S.other) }) : null,
   S.viber ? row({ icon: 'phone', label: 'Viber', value: S.viber, href: 'tel:' + digits(S.viber) }) : null
 ].filter(Boolean);
 
