@@ -223,9 +223,13 @@
 
 </main>
 
+<script src="config.js"></script>
 <script>
 /* ---------- Default placeholder data (overridden by edit.html) ---------- */
 const STORAGE_KEY = 'profile-card';
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+const HAS_REMOTE_CONFIG = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const DEFAULTS = {
   name: 'Full Name',
   nickname: 'Nickname',
@@ -261,6 +265,30 @@ function loadProfile() {
   return { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } };
 }
 const PROFILE = loadProfile();
+
+async function loadRemoteProfile() {
+  if (!HAS_REMOTE_CONFIG) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profile?select=payload&id=eq.single`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    const remote = rows && rows[0] && rows[0].payload ? rows[0].payload : null;
+    if (!remote) return;
+    const merged = { ...DEFAULTS, ...remote, social: { ...DEFAULTS.social, ...(remote.social || {}) } };
+    Object.assign(PROFILE, merged);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    renderProfileView();
+  } catch (err) {
+    console.warn('Remote profile load failed:', err);
+  }
+}
+
 const photoEl = document.getElementById('photo');
 const placeholderPhoto = `
   <svg viewBox="0 0 390 523" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Profile photo placeholder">
@@ -348,36 +376,48 @@ async function shareOrCopy(el, text) {
   } catch (e) { /* share cancelled or clipboard unavailable */ }
 }
 
-const P = PROFILE, S = PROFILE.social;
-document.getElementById('heroName').textContent = P.name;
-document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
+function renderProfileView() {
+  const P = PROFILE;
+  const S = PROFILE.social || {};
 
-const companyName = P.company || 'University of Perpetual Help';
-document.getElementById('companyStatA').textContent = companyName;
+  document.getElementById('heroName').textContent = P.name;
+  document.getElementById('heroHandle').textContent = '@' + (P.nickname || 'nickname').toLowerCase().replace(/\s+/g, '');
 
-document.getElementById('details').append(
-  row({ icon: 'user',    label: 'Name',           value: P.name }),
-  row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
-  row({ icon: 'job',     label: 'Position',       value: P.position }),
-  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
-  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
-  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
-  row({ icon: 'company', label: 'Company',        value: P.company }),
-  row({ icon: 'pin',     label: 'Address',        value: P.address,
-        href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
-  row({ icon: 'user',    label: 'Bio',            value: P.bio })
-);
+  const companyName = P.company || 'University of Perpetual Help';
+  document.getElementById('companyStatA').textContent = companyName;
 
-document.getElementById('socials').append(
-  row({ icon: 'facebook',  label: 'Facebook',   value: S.facebook,  href: 'https://facebook.com/' + strip(S.facebook) }),
-  row({ icon: 'instagram', label: 'Instagram',  value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }),
-  row({ icon: 'linkedin',  label: 'LinkedIn',   value: S.linkedin,  href: url(S.linkedin) }),
-  row({ icon: 'wechat',    label: 'WeChat',     value: S.wechat,    action: el => shareOrCopy(el, S.wechat) }),
-  row({ icon: 'whatsapp',  label: 'WhatsApp',   value: S.whatsapp,  href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }),
-  row({ icon: 'telegram',  label: 'Telegram',   value: S.telegram,  href: 'https://t.me/' + strip(S.telegram) }),
-  row({ icon: 'link',      label: 'Other link', value: S.other,     href: url(S.other) })
-);
+  const details = document.getElementById('details');
+  const socials = document.getElementById('socials');
+  details.innerHTML = '';
+  socials.innerHTML = '';
+
+  details.append(
+    row({ icon: 'user',    label: 'Name',           value: P.name }),
+    row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
+    row({ icon: 'job',     label: 'Position',       value: P.position }),
+    row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
+    row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
+    row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
+    row({ icon: 'company', label: 'Company',        value: P.company }),
+    row({ icon: 'pin',     label: 'Address',        value: P.address,
+          href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
+    row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
+    row({ icon: 'user',    label: 'Bio',            value: P.bio })
+  );
+
+  socials.append(
+    row({ icon: 'facebook',  label: 'Facebook',   value: S.facebook,  href: 'https://facebook.com/' + strip(S.facebook) }),
+    row({ icon: 'instagram', label: 'Instagram',  value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }),
+    row({ icon: 'linkedin',  label: 'LinkedIn',   value: S.linkedin,  href: url(S.linkedin) }),
+    row({ icon: 'wechat',    label: 'WeChat',     value: S.wechat,    action: el => shareOrCopy(el, S.wechat) }),
+    row({ icon: 'whatsapp',  label: 'WhatsApp',   value: S.whatsapp,  href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }),
+    row({ icon: 'telegram',  label: 'Telegram',   value: S.telegram,  href: 'https://t.me/' + strip(S.telegram) }),
+    row({ icon: 'link',      label: 'Other link', value: S.other,     href: url(S.other) })
+  );
+}
+
+renderProfileView();
+loadRemoteProfile();
 
 /* ---------- Follow toggle ---------- */
 const follow = document.getElementById('follow');
