@@ -2,10 +2,7 @@
   "version": 2,
   "name": "profile-card",
   "builds": [
-    {
-      "src": "**/*.html",
-      "use": "@vercel/static"
-    }
+    { "src": "**/*", "use": "@vercel/static" }
   ],
   "routes": [
     { "handle": "filesystem" },
