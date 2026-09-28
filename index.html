@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page-bg: #f7f0f1;
+    --ink: #2a0a0d;
+    --muted: #7a4d53;
+    --line: #f0dfe1;
+    --sheet-bg: #fff9fa;
+    --card: #ffffff;
+    --tile: #f7ecee;
+    --grad: linear-gradient(90deg, #5a0712 0%, #7d0f20 45%, #a01d2d 100%);
+    --ease: cubic-bezier(.32, .72, 0, 1);
+    --dur: 380ms;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page-bg: #0c0b10; }
+  }
+  :root[data-theme="dark"] { --page-bg: #0c0b10; }
+
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; height: 100%;
+    background: var(--page-bg);
+    display: grid; place-items: center;
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid #ff5fa2; outline-offset: 2px; }
+  svg { display: block; }
+
+  /* ---------- Phone frame ---------- */
+  .app {
+    --p: 0;
+    position: relative;
+    width: min(390px, 100%);
+    height: min(844px, 100%);
+    background: #000;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    isolation: isolate;
+  }
+  @media (max-width: 430px) {
+    .app { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+    body { background: #000; }
+  }
+
+  /* ---------- Hero (dark card) ---------- */
+  .hero {
+    position: absolute; inset: 0;
+    background: #000; color: #fff;
+    transform-origin: 50% 0;
+    transform: translateY(calc(var(--p) * 14px)) scale(calc(1 - var(--p) * .08));
+    border-radius: calc(var(--p) * 28px);
+    overflow: hidden;
+    touch-action: none;
+    user-select: none; -webkit-user-select: none;
+  }
+  .photo { position: absolute; left: 0; right: 0; top: 0; height: 62%; }
+  .photo svg, .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shade {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      rgba(0,0,0,.38) 0%, rgba(0,0,0,0) 22%,
+      rgba(0,0,0,0) 34%, rgba(0,0,0,.8) 54%, #000 63%);
+  }
+  .dim { position: absolute; inset: 0; background: #000; opacity: calc(var(--p) * .55); pointer-events: none; }
+
+  .topbar {
+    position: absolute; top: 16px; left: 16px; right: 16px; z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .glass {
+    height: 40px; border: 0; color: #fff;
+    background: rgba(0,0,0,.38);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 999px;
+  }
+  .glass.round { width: 40px; }
+  .glass.pill { padding: 0 16px; font-size: 14px; font-weight: 600; }
+  .glass svg { width: 20px; height: 20px; }
+  .glass.pill svg { width: 16px; height: 16px; }
+
+  .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 24px 40px; z-index: 2; }
+  .name { margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
+  .handle { margin-top: 6px; display: flex; align-items: center; gap: 6px; color: #9a97a6; font-size: 14px; }
+  .badge { width: 18px; height: 18px; }
+
+  .stats {
+    margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr);
+    background: rgba(255,255,255,.08); border-radius: 20px; padding: 14px 0;
+  }
+  .stat { text-align: center; }
+  .stat + .stat { border-left: 1px solid rgba(255,255,255,.1); }
+  .stat b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .stat span { display: block; margin-top: 2px; font-size: 12px; color: #d8c5c8; }
+
+  .follow {
+    margin-top: 18px; width: 100%; height: 56px; border: 0; border-radius: 999px;
+    background: var(--grad); color: #fff; font-size: 16px; font-weight: 700;
+    transition: transform 160ms ease, background 200ms ease;
+  }
+  .follow:active { transform: scale(.98); }
+  .follow.on { background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.3); }
+
+  .grab {
+    position: absolute; left: 50%; bottom: 6px; z-index: 3;
+    width: 72px; height: 28px; margin-left: -36px;
+    background: none; border: 0; padding: 0;
+    display: grid; place-items: center;
+  }
+  .grab i { display: block; width: 36px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.4); }
+
+  /* ---------- Detail sheet ---------- */
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; top: 84px; z-index: 5;
+    background: var(--sheet-bg);
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 -12px 40px rgba(0,0,0,.3);
+    display: flex; flex-direction: column;
+    transform: translateY(calc((1 - var(--p)) * 100%));
+  }
+  .sheet-head { padding: 6px 20px 4px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .sheet-grab { display: grid; place-items: center; width: 100%; height: 24px; background: none; border: 0; padding: 0; }
+  .sheet-grab i { display: block; width: 44px; height: 5px; border-radius: 5px; background: #cfcbd6; }
+  .sheet-head h2 { margin: 4px 0 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+
+  .sheet-scroll {
+    flex: 1; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+    padding: 10px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+    -webkit-overflow-scrolling: touch;
+  }
+  .group { background: var(--card); border-radius: 20px; overflow: hidden; }
+  .section-title { margin: 24px 4px 10px; font-size: 15px; font-weight: 700; }
+
+  .row {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 13px 16px; text-align: left; text-decoration: none; color: inherit;
+    background: none; border: 0;
+  }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row.tap { transition: background 150ms ease; }
+  .row.tap:active { background: #f7f6fa; }
+  .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--tile); display: grid; place-items: center; }
+  .ico svg { width: 20px; height: 20px; }
+  .txt { flex: 1; min-width: 0; }
+  .lbl { display: block; font-size: 12px; color: var(--muted); }
+  .val { display: block; margin-top: 1px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+  .go { flex: none; color: #b3afbf; }
+  .go svg { width: 18px; height: 18px; }
+
+  /* ---------- Motion ---------- */
+  .app:not(.dragging) .hero,
+  .app:not(.dragging) .sheet { transition: transform var(--dur) var(--ease), border-radius var(--dur) var(--ease); }
+  .app:not(.dragging) .dim { transition: opacity var(--dur) var(--ease); }
+  @media (prefers-reduced-motion: reduce) {
+    .app:not(.dragging) .hero,
+    .app:not(.dragging) .sheet,
+    .app:not(.dragging) .dim { transition-duration: 1ms; }
+  }
+</style>
+</head>
+<body>
+
+<main class="app" id="app">
+
+  <!-- Card 1: photo profile -->
+  <section class="hero" id="hero" aria-label="Profile">
+    <div class="photo" id="photo"></div>
+    <div class="shade"></div>
+    <div class="dim"></div>
+
+    <div class="topbar">
+      <button class="glass round" type="button" aria-label="Back" data-icon="back"></button>
+    </div>
+
+    <div class="info">
+      <h1 class="name" id="heroName"></h1>
+      <div class="handle">
+        <span id="heroHandle"></span>
+        <svg class="badge" viewBox="0 0 24 24" role="img" aria-label="Verified">
+          <path fill="#3d9bff" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3 3.2.1z"/>
+          <path d="M8 12.2l2.7 2.7L16 9.6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="companyStatA">Company</b><span>Brand</span></div>
+        <div class="stat"><b id="companyStatB">Name</b><span>Studio</span></div>
+        <div class="stat"><b id="companyStatC">Co.</b><span>Label</span></div>
+      </div>
+
+      <button class="follow" id="follow" type="button" aria-pressed="false">Message</button>
+    </div>
+
+    <button class="grab" id="openBtn" type="button" aria-label="Show contact info"><i></i></button>
+  </section>
+
+  <!-- Card 2: detail panel -->
+  <section class="sheet" id="sheet" aria-label="Contact info" aria-hidden="true" inert>
+    <div class="sheet-head" id="sheetHead">
+      <button class="sheet-grab" id="closeBtn" type="button" aria-label="Back to profile"><i></i></button>
+      <h2>Contact info</h2>
+    </div>
+    <div class="sheet-scroll" id="list">
+      <div class="group" id="details"></div>
+      <h3 class="section-title">Social media</h3>
+      <div class="group" id="socials"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ---------- Default placeholder data (overridden by edit.html) ---------- */
+const STORAGE_KEY = 'profile-card';
+const DEFAULTS = {
+  name: 'Full Name',
+  nickname: 'Nickname',
+  position: 'Job Title',
+  phone: '+00 000 0000',
+  phone2: '+00 000 0000',
+  company: 'Company Name',
+  address: 'Full Address',
+  email: 'name@gmail.com',
+  photo: '',
+  social: {
+    facebook: '@handle',
+    instagram: '@handle',
+    linkedin: 'https://linkedin.com/in/profile',
+    wechat: 'WeChat ID',
+    whatsapp: '+00 000 0000',
+    telegram: '@handle',
+    other: 'https://example.com'
+  }
+};
+
+function loadProfile() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) {}
+  if (!saved || typeof saved !== 'object') return DEFAULTS;
+  return { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } };
+}
+const PROFILE = loadProfile();
+const photoEl = document.getElementById('photo');
+const placeholderPhoto = `
+  <svg viewBox="0 0 390 523" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Profile photo placeholder">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffb46b"/>
+        <stop offset=".5" stop-color="#e9527f"/>
+        <stop offset="1" stop-color="#4d3aa8"/>
+      </linearGradient>
+      <radialGradient id="glow" cx=".5" cy=".38" r=".5">
+        <stop offset="0" stop-color="#fff" stop-opacity=".35"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="390" height="523" fill="url(#bg)"/>
+    <rect width="390" height="523" fill="url(#glow)"/>
+    <path d="M40 523c0-92 65-146 155-146s155 54 155 146z" fill="#26123f" opacity=".55"/>
+    <circle cx="195" cy="255" r="72" fill="#26123f" opacity=".55"/>
+  </svg>
+`;
+
+function renderProfilePhoto() {
+  if (PROFILE.photo) {
+    photoEl.innerHTML = `<img src="${PROFILE.photo}" alt="Profile photo">`;
+    return;
+  }
+  photoEl.innerHTML = placeholderPhoto;
+}
+renderProfilePhoto();
+
+/* ---------- Icons (line) ---------- */
+const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  back: svg('<path d="M19 12H5M12 19l-7-7 7-7"/>'),
+  edit: svg('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+  out: svg('<path d="M7 17L17 7M8 7h9v9"/>'),
+  user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>'),
+  nick: svg('<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>'),
+  job: svg('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>'),
+  phone: svg('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.7A2 2 0 0 1 22 16.92z"/>'),
+  company: svg('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M10 21v-4h4v4"/>'),
+  pin: svg('<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>'),
+  mail: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+  facebook: svg('<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'),
+  instagram: svg('<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>'),
+  linkedin: svg('<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>'),
+  wechat: svg('<path d="M9 4C5.4 4 2.5 6.3 2.5 9.2c0 1.6.9 3.1 2.3 4L4.3 15.5l2.4-1.2c.5.1 1 .2 1.5.2"/><path d="M21.5 14.2c0-2.6-2.5-4.7-5.5-4.7s-5.5 2.1-5.5 4.7 2.5 4.7 5.5 4.7c.7 0 1.3-.1 1.9-.3l2 1-.4-2c1.1-.8 2-2 2-3.4z"/>'),
+  whatsapp: svg('<path d="M3 21l1.65-4.9A9 9 0 1 1 8 19.4L3 21z"/><path d="M9 9c0 3.5 3 6.5 6 6l1-1.5-2-1-1 .8c-1-.5-1.8-1.3-2.3-2.3l.8-1-1-2z"/>'),
+  telegram: svg('<path d="M22 3L2 11l7 2.5L11.5 21l3-5 5 3.5L22 3z"/><path d="M9 13.5L22 3"/>'),
+  link: svg('<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>')
+};
+document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = ICONS[el.dataset.icon]; });
+
+/* ---------- Content ---------- */
+const strip = s => s.replace(/^@/, '');
+const digits = s => s.replace(/[^\d+]/g, '');
+const url = s => /^https?:\/\//i.test(s) ? s : 'https://' + s;
+
+function row({ icon, label, value, href, action }) {
+  if (!value) { value = '—'; href = undefined; action = undefined; }
+  const tappable = !!(href || action);
+  const el = document.createElement(href ? 'a' : action ? 'button' : 'div');
+  el.className = 'row' + (tappable ? ' tap' : '');
+  if (href) {
+    el.href = href;
+    if (/^https?:/.test(href)) { el.target = '_blank'; el.rel = 'noopener noreferrer'; }
+  }
+  if (action) { el.type = 'button'; el.addEventListener('click', () => action(el)); }
+  el.innerHTML =
+    `<span class="ico">${ICONS[icon]}</span>` +
+    `<span class="txt"><span class="lbl"></span><span class="val"></span></span>` +
+    (tappable ? `<span class="go">${ICONS.out}</span>` : '');
+  el.querySelector('.lbl').textContent = label;
+  el.querySelector('.val').textContent = value;
+  return el;
+}
+
+async function shareOrCopy(el, text) {
+  const val = el.querySelector('.val');
+  try {
+    if (navigator.share) { await navigator.share({ text }); return; }
+    await navigator.clipboard.writeText(text);
+    val.textContent = 'Copied';
+    setTimeout(() => { val.textContent = text; }, 1400);
+  } catch (e) { /* share cancelled or clipboard unavailable */ }
+}
+
+const P = PROFILE, S = PROFILE.social;
+document.getElementById('heroName').textContent = P.name;
+document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
+
+const companyName = P.company || 'Company Name';
+const companyPieces = companyName.split(/\s+/).filter(Boolean);
+document.getElementById('companyStatA').textContent = companyPieces[0] || companyName;
+document.getElementById('companyStatB').textContent = companyPieces.slice(0, 2).join(' ') || companyName;
+document.getElementById('companyStatC').textContent = companyPieces.slice(-1)[0] || 'Co.';
+
+document.getElementById('details').append(
+  row({ icon: 'user',    label: 'Name',           value: P.name }),
+  row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
+  row({ icon: 'job',     label: 'Position',       value: P.position }),
+  row({ icon: 'phone',   label: 'Contact number', value: P.phone,  href: 'tel:' + digits(P.phone) }),
+  row({ icon: 'phone',   label: 'Other number',   value: P.phone2, href: 'tel:' + digits(P.phone2) }),
+  row({ icon: 'company', label: 'Company',        value: P.company }),
+  row({ icon: 'pin',     label: 'Address',        value: P.address,
+        href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email })
+);
+
+document.getElementById('socials').append(
+  row({ icon: 'facebook',  label: 'Facebook',   value: S.facebook,  href: 'https://facebook.com/' + strip(S.facebook) }),
+  row({ icon: 'instagram', label: 'Instagram',  value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }),
+  row({ icon: 'linkedin',  label: 'LinkedIn',   value: S.linkedin,  href: url(S.linkedin) }),
+  row({ icon: 'wechat',    label: 'WeChat',     value: S.wechat,    action: el => shareOrCopy(el, S.wechat) }),
+  row({ icon: 'whatsapp',  label: 'WhatsApp',   value: S.whatsapp,  href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }),
+  row({ icon: 'telegram',  label: 'Telegram',   value: S.telegram,  href: 'https://t.me/' + strip(S.telegram) }),
+  row({ icon: 'link',      label: 'Other link', value: S.other,     href: url(S.other) })
+);
+
+/* ---------- Follow toggle ---------- */
+const follow = document.getElementById('follow');
+follow.addEventListener('click', () => {
+  const email = (P.email || 'hello@example.com').trim();
+  window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent('Hello ' + P.name);
+});
+document.querySelectorAll('.topbar .glass').forEach(b => b.addEventListener('click', e => e.preventDefault()));
+
+/* ---------- Scroll-reveal engine ---------- */
+const app = document.getElementById('app');
+const hero = document.getElementById('hero');
+const sheet = document.getElementById('sheet');
+const head = document.getElementById('sheetHead');
+const list = document.getElementById('list');
+
+let p = 0, open = false;
+const travel = () => app.clientHeight * 0.6;
+const setP = v => { p = Math.max(0, Math.min(1, v)); app.style.setProperty('--p', p); };
+
+function snap(next) {
+  open = next;
+  app.classList.remove('dragging');
+  setP(next ? 1 : 0);
+  sheet.inert = !next;
+  hero.inert = next;
+  sheet.setAttribute('aria-hidden', String(!next));
+  if (!next) list.scrollTop = 0;
+}
+
+/* Pointer drag on the photo card (swipe up) and on the sheet header (swipe down) */
+function attachDrag(el) {
+  let startY = 0, startP = 0, moved = false, id = null, lastY = 0, lastT = 0, vy = 0;
+  el.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    startY = lastY = e.clientY; startP = p; moved = false; id = e.pointerId; lastT = performance.now(); vy = 0;
+  });
+  el.addEventListener('pointermove', e => {
+    if (id !== e.pointerId) return;
+    const dy = startY - e.clientY;
+    if (!moved && Math.abs(dy) > 6) {
+      moved = true;
+      app.classList.add('dragging');
+      try { el.setPointerCapture(id); } catch (_) {}
+    }
+    if (moved) {
+      const now = performance.now();
+      vy = (lastY - e.clientY) / Math.max(1, now - lastT);
+      lastY = e.clientY; lastT = now;
+      setP(startP + dy / travel());
+    }
+  });
+  const end = e => {
+    if (id !== e.pointerId) return;
+    id = null;
+    if (!moved) return;
+    el.addEventListener('click', ev => { ev.stopPropagation(); ev.preventDefault(); }, { capture: true, once: true });
+    snap(vy > 0.4 ? true : vy < -0.4 ? false : p > 0.5);
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+attachDrag(hero);
+attachDrag(head);
+
+/* Touch: pulling down while the detail list is at the top closes the sheet */
+let ty = 0, pulling = false;
+list.addEventListener('touchstart', e => { ty = e.touches[0].clientY; pulling = false; }, { passive: true });
+list.addEventListener('touchmove', e => {
+  const y = e.touches[0].clientY;
+  if (!pulling && list.scrollTop <= 0 && y - ty > 6) {
+    pulling = true; ty = y; app.classList.add('dragging');
+  }
+  if (pulling) { e.preventDefault(); setP(1 - (y - ty) / travel()); }
+}, { passive: false });
+const endPull = () => { if (pulling) { pulling = false; snap(p > 0.7); } };
+list.addEventListener('touchend', endPull);
+list.addEventListener('touchcancel', endPull);
+
+/* Mouse wheel / trackpad */
+let lock = 0, lastWheel = 0;
+app.addEventListener('wheel', e => {
+  const now = Date.now();
+  const newGesture = now - lastWheel > 150;
+  lastWheel = now;
+  if (now < lock) return;
+  if (!open && e.deltaY > 8) { snap(true); lock = now + 600; }
+  else if (open && newGesture && list.scrollTop <= 0 && e.deltaY < -8) { snap(false); lock = now + 600; }
+}, { passive: true });
+
+/* Buttons + keyboard */
+document.getElementById('openBtn').addEventListener('click', () => snap(true));
+document.getElementById('closeBtn').addEventListener('click', () => snap(false));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && open) snap(false);
+  if (e.key === 'ArrowUp' && !open && document.activeElement === document.body) snap(true);
+});
+</script>
+</body>
+</html>

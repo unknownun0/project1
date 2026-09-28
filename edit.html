@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edit profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f1f2;
+    --field: rgba(122,13,29,.06);
+    --muted: #7a4d53;
+    --grad: linear-gradient(90deg, #5a0712 0%, #7d0f20 45%, #a01d2d 100%);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; background: var(--bg); color: #2a0a0d;
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid #ff5fa2; outline-offset: 2px; }
+
+  .wrap { max-width: 480px; margin: 0 auto; padding: 16px 20px 40px; }
+  .top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .back {
+    width: 40px; height: 40px; border-radius: 999px; background: rgba(122,13,29,.08);
+    display: grid; place-items: center; color: #2a0a0d; text-decoration: none;
+  }
+  .back svg { width: 20px; height: 20px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+
+  h2 { margin: 28px 4px 12px; font-size: 15px; font-weight: 700; }
+  .field { display: block; margin-bottom: 12px; }
+  .field span { display: block; margin: 0 4px 6px; font-size: 13px; color: var(--muted); }
+  .field input {
+    width: 100%; height: 52px; padding: 0 18px; border: 0; border-radius: 16px;
+    background: var(--field); color: #2a0a0d; font: inherit; font-size: 15px;
+    box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow 160ms ease;
+  }
+  .field input::placeholder { color: #846a6e; }
+  .field input:focus { outline: none; box-shadow: inset 0 0 0 1.5px #7d0f20; }
+
+  .photo-box {
+    display: grid; gap: 12px; margin: 0 0 20px;
+  }
+  .photo-upload {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 120px; height: 120px; margin: 0 auto; border-radius: 28px;
+    border: 1px solid rgba(122,13,29,.18); background: rgba(122,13,29,.05);
+    overflow: hidden; cursor: pointer;
+  }
+  .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-upload img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .photo-upload .placeholder {
+    display: grid; place-items: center; width: 100%; height: 100%;
+    color: #2a0a0d; font-size: 13px; font-weight: 700; text-align: center;
+    background: linear-gradient(135deg, rgba(122,13,29,.08), rgba(160,29,45,.15));
+  }
+  .photo-upload img + .placeholder { display: none; }
+
+  .actions { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+  .save {
+    height: 56px; border: 0; border-radius: 999px; background: var(--grad);
+    color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .save:active { transform: scale(.98); }
+  .cancel {
+    height: 56px; border-radius: 999px; display: grid; place-items: center;
+    color: #2a0a0d; text-decoration: none; font-size: 16px; font-weight: 600;
+    box-shadow: inset 0 0 0 1.5px rgba(122,13,29,.2);
+  }
+  .msg { min-height: 20px; margin: 0; text-align: center; font-size: 14px; color: #ff8a8a; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <a class="back" href="index.html" aria-label="Back to profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <h1>Edit profile</h1>
+  </div>
+
+  <form id="form" autocomplete="off" novalidate>
+    <div class="photo-box">
+      <label class="photo-upload" aria-label="Upload profile photo">
+        <input id="photoInput" type="file" accept="image/*">
+        <img id="photoPreview" alt="Profile preview" hidden>
+        <span class="placeholder">Upload photo</span>
+      </label>
+    </div>
+
+    <h2>Details</h2>
+    <div id="details"></div>
+    <h2>Social media</h2>
+    <div id="socials"></div>
+
+    <div class="actions">
+      <p class="msg" id="msg" role="status"></p>
+      <button class="save" type="submit">Save changes</button>
+      <a class="cancel" href="index.html">Cancel</a>
+    </div>
+  </form>
+</main>
+
+<script>
+const STORAGE_KEY = 'profile-card';
+const DEFAULTS = {
+  name: 'Full Name', nickname: 'Nickname', position: 'Job Title',
+  phone: '+00 000 0000', phone2: '+00 000 0000', company: 'Company Name',
+  address: 'Full Address', email: 'name@gmail.com', photo: '',
+  social: {
+    facebook: '@handle', instagram: '@handle', linkedin: 'https://linkedin.com/in/profile',
+    wechat: 'WeChat ID', whatsapp: '+00 000 0000', telegram: '@handle', other: 'https://example.com'
+  }
+};
+
+const DETAIL_FIELDS = [
+  ['name', 'Name', 'text'], ['nickname', 'Nickname', 'text'], ['position', 'Position', 'text'],
+  ['phone', 'Contact number', 'tel'], ['phone2', 'Other number', 'tel'], ['company', 'Company', 'text'],
+  ['address', 'Address', 'text'], ['email', 'Gmail', 'email']
+];
+const SOCIAL_FIELDS = [
+  ['facebook', 'Facebook'], ['instagram', 'Instagram'], ['linkedin', 'LinkedIn'], ['wechat', 'WeChat'],
+  ['whatsapp', 'WhatsApp'], ['telegram', 'Telegram'], ['other', 'Other link']
+];
+
+function load() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) {}
+  if (!saved || typeof saved !== 'object') return DEFAULTS;
+  return { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } };
+}
+const current = load();
+const photoInput = document.getElementById('photoInput');
+const photoPreview = document.getElementById('photoPreview');
+
+function renderPhotoPreview(src) {
+  const hasPhoto = Boolean(src);
+  photoPreview.src = src || '';
+  photoPreview.hidden = !hasPhoto;
+}
+renderPhotoPreview(current.photo || '');
+
+photoInput.addEventListener('change', e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    document.getElementById('msg').textContent = 'Please choose an image file.';
+    e.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    current.photo = String(reader.result || '');
+    renderPhotoPreview(current.photo);
+    document.getElementById('msg').textContent = '';
+  };
+  reader.readAsDataURL(file);
+});
+
+function field(name, label, type, value) {
+  const wrap = document.createElement('label');
+  wrap.className = 'field';
+  wrap.innerHTML = '<span></span><input>';
+  wrap.querySelector('span').textContent = label;
+  const input = wrap.querySelector('input');
+  input.name = name; input.type = type; input.value = value || '';
+  input.autocapitalize = 'off'; input.spellcheck = false;
+  return wrap;
+}
+
+const details = document.getElementById('details');
+const socials = document.getElementById('socials');
+DETAIL_FIELDS.forEach(([k, label, type]) => details.append(field(k, label, type, current[k])));
+SOCIAL_FIELDS.forEach(([k, label]) => socials.append(field('social.' + k, label, 'text', current.social[k])));
+
+document.getElementById('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const out = { photo: current.photo || '', social: {} };
+  new FormData(e.target).forEach((v, k) => {
+    v = String(v).trim();
+    if (k.startsWith('social.')) out.social[k.slice(7)] = v; else if (k !== 'photo') out[k] = v;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+    location.href = 'index.html';
+  } catch (err) {
+    document.getElementById('msg').textContent = "Couldn't save. Allow site storage in this browser and try again.";
+  }
+});
+</script>
+</body>
+</html>
