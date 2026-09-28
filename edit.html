@@ -113,16 +113,16 @@
 <script>
 const STORAGE_KEY = 'profile-card';
 const DEFAULTS = {
-  name: 'Full Name', nickname: 'Nickname', position: 'Job Title',
+  name: 'Engr. Roland Paul V. Tamayo, PAFR, ME, MBA', nickname: 'Engr. Roland', position: 'Company Commander',
   phone: '+00 000 0000', phone2: '+00 000 0000', company: 'University of Perpetual Help',
-  bio: 'Write a short bio about yourself or the organization.',
-  contact1Label: 'Mobile', contact1Value: '+00 000 0000',
-  contact2Label: 'Office', contact2Value: '+00 000 0000',
-  contact3Label: 'Emergency', contact3Value: '+00 000 0000',
-  address: 'Full Address', email: 'name@gmail.com', photo: '',
+  bio: 'Maj Roland Paul V. Tamayo, Headquarters Support Service Group (HSSG) 1st AFP ArmC AFPSN 0-147379',
+  contact1Label: 'Truckline', contact1Value: '+ (632) 8872-ALTA',
+  contact2Label: 'Truckline', contact2Value: '+ (632) 8874 8514 local 5064',
+  contact3Label: 'Mobile', contact3Value: '+63 917 568 4262',
+  address: 'Alabang-Zapote Road, Pamplona 3, Las Piñas City, Philippines 1740', email: 'engr_rptamayo@yahoo.com', photo: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/UPHSD_Logo.png',
   social: {
-    facebook: '@handle', instagram: '@handle', linkedin: 'https://linkedin.com/in/profile',
-    wechat: 'WeChat ID', whatsapp: '+00 000 0000', telegram: '@handle', other: 'https://example.com'
+    facebook: '', instagram: '', linkedin: '',
+    wechat: '+63 917 568 4262', whatsapp: '', telegram: '', other: '', viber: '+63 917 568 4262'
   }
 };
 
@@ -146,30 +146,6 @@ function load() {
   if (!saved || typeof saved !== 'object') return DEFAULTS;
   return { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } };
 }
-
-async function loadRemoteProfile() {
-  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) return;
-  try {
-    const res = await fetch(`${window.SUPABASE_URL}/rest/v1/profile?select=payload&id=eq.single`, {
-      headers: {
-        'apikey': window.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    if (!res.ok) return;
-    const rows = await res.json();
-    const remote = rows && rows[0] && rows[0].payload ? rows[0].payload : null;
-    if (!remote) return;
-    const merged = { ...DEFAULTS, ...remote, social: { ...DEFAULTS.social, ...(remote.social || {}) } };
-    Object.assign(current, merged);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    renderCurrentForm();
-  } catch (err) {
-    console.warn('Remote profile prefill failed:', err);
-  }
-}
-
 const current = load();
 const photoInput = document.getElementById('photoInput');
 const photoPreview = document.getElementById('photoPreview');
@@ -229,18 +205,10 @@ function field(name, label, type, value) {
 
 const details = document.getElementById('details');
 const socials = document.getElementById('socials');
+DETAIL_FIELDS.forEach(([k, label, type]) => details.append(field(k, label, type, current[k])));
+SOCIAL_FIELDS.forEach(([k, label]) => socials.append(field('social.' + k, label, 'text', current.social[k])));
 
-function renderCurrentForm() {
-  details.innerHTML = '';
-  socials.innerHTML = '';
-  DETAIL_FIELDS.forEach(([k, label, type]) => details.append(field(k, label, type, current[k])));
-  SOCIAL_FIELDS.forEach(([k, label]) => socials.append(field('social.' + k, label, 'text', current.social[k])));
-}
-
-renderCurrentForm();
-loadRemoteProfile();
-
-document.getElementById('form').addEventListener('submit', async e => {
+document.getElementById('form').addEventListener('submit', e => {
   e.preventDefault();
   const out = { photo: current.photo || '', social: {} };
   new FormData(e.target).forEach((v, k) => {
@@ -249,23 +217,6 @@ document.getElementById('form').addEventListener('submit', async e => {
   });
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
-
-    if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
-      const response = await fetch(`${window.SUPABASE_URL}/rest/v1/profile?id=eq.single`, {
-        method: 'PUT',
-        headers: {
-          'apikey': window.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify({ id: 'single', payload: out })
-      });
-      if (!response.ok) {
-        console.warn('Remote save failed; local save was still stored.');
-      }
-    }
-
     location.href = 'index.html';
   } catch (err) {
     document.getElementById('msg').textContent = "Couldn't save. Allow site storage in this browser and try again.";

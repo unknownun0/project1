@@ -223,72 +223,51 @@
 
 </main>
 
-<script src="config.js"></script>
 <script>
 /* ---------- Default placeholder data (overridden by edit.html) ---------- */
 const STORAGE_KEY = 'profile-card';
-const SUPABASE_URL = window.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
-const HAS_REMOTE_CONFIG = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const DEFAULTS = {
-  name: 'Full Name',
-  nickname: 'Nickname',
-  position: 'Job Title',
+  name: 'Engr. Roland Paul V. Tamayo, PAFR, ME, MBA',
+  nickname: 'Engr. Roland',
+  position: 'Company Commander',
   phone: '+00 000 0000',
   phone2: '+00 000 0000',
   company: 'University of Perpetual Help',
-  bio: 'Write a short bio about yourself or the organization.',
-  contact1Label: 'Mobile',
-  contact1Value: '+00 000 0000',
-  contact2Label: 'Office',
-  contact2Value: '+00 000 0000',
-  contact3Label: 'Emergency',
-  contact3Value: '+00 000 0000',
-  address: 'Full Address',
-  email: 'name@gmail.com',
-  photo: '',
+  bio: 'Maj Roland Paul V. Tamayo, Headquarters Support Service Group (HSSG) 1st AFP ArmC AFPSN 0-147379',
+  contact1Label: 'Truckline',
+  contact1Value: '+ (632) 8872-ALTA',
+  contact2Label: 'Truckline',
+  contact2Value: '+ (632) 8874 8514 local 5064',
+  contact3Label: 'Mobile',
+  contact3Value: '+63 917 568 4262',
+  address: 'Alabang-Zapote Road, Pamplona 3, Las Piñas City, Philippines 1740',
+  email: 'engr_rptamayo@yahoo.com',
+  photo: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/UPHSD_Logo.png',
   social: {
-    facebook: '@handle',
-    instagram: '@handle',
-    linkedin: 'https://linkedin.com/in/profile',
-    wechat: 'WeChat ID',
-    whatsapp: '+00 000 0000',
-    telegram: '@handle',
-    other: 'https://example.com'
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    wechat: '+63 917 568 4262',
+    whatsapp: '',
+    telegram: '',
+    other: '',
+    viber: '+63 917 568 4262'
   }
 };
 
 function loadProfile() {
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) {}
-  if (!saved || typeof saved !== 'object') return DEFAULTS;
-  return { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } };
+  const saved = (() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { return null; }
+  })();
+
+  const finalProfile = saved && typeof saved === 'object'
+    ? { ...DEFAULTS, ...saved, social: { ...DEFAULTS.social, ...(saved.social || {}) } }
+    : DEFAULTS;
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS));
+  return DEFAULTS;
 }
 const PROFILE = loadProfile();
-
-async function loadRemoteProfile() {
-  if (!HAS_REMOTE_CONFIG) return;
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profile?select=payload&id=eq.single`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    if (!res.ok) return;
-    const rows = await res.json();
-    const remote = rows && rows[0] && rows[0].payload ? rows[0].payload : null;
-    if (!remote) return;
-    const merged = { ...DEFAULTS, ...remote, social: { ...DEFAULTS.social, ...(remote.social || {}) } };
-    Object.assign(PROFILE, merged);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    renderProfileView();
-  } catch (err) {
-    console.warn('Remote profile load failed:', err);
-  }
-}
-
 const photoEl = document.getElementById('photo');
 const placeholderPhoto = `
   <svg viewBox="0 0 390 523" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Profile photo placeholder">
@@ -376,48 +355,39 @@ async function shareOrCopy(el, text) {
   } catch (e) { /* share cancelled or clipboard unavailable */ }
 }
 
-function renderProfileView() {
-  const P = PROFILE;
-  const S = PROFILE.social || {};
+const P = PROFILE, S = PROFILE.social;
+document.getElementById('heroName').textContent = P.name;
+document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
 
-  document.getElementById('heroName').textContent = P.name;
-  document.getElementById('heroHandle').textContent = '@' + (P.nickname || 'nickname').toLowerCase().replace(/\s+/g, '');
+const companyName = P.company || 'University of Perpetual Help';
+document.getElementById('companyStatA').textContent = companyName;
 
-  const companyName = P.company || 'University of Perpetual Help';
-  document.getElementById('companyStatA').textContent = companyName;
+document.getElementById('details').append(
+  row({ icon: 'user',    label: 'Name',           value: P.name }),
+  row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
+  row({ icon: 'job',     label: 'Position',       value: P.position }),
+  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
+  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
+  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
+  row({ icon: 'company', label: 'Company',        value: P.company }),
+  row({ icon: 'pin',     label: 'Address',        value: P.address,
+        href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
+  row({ icon: 'user',    label: 'Bio',            value: P.bio })
+);
 
-  const details = document.getElementById('details');
-  const socials = document.getElementById('socials');
-  details.innerHTML = '';
-  socials.innerHTML = '';
+const socialEntries = [
+  S.facebook ? row({ icon: 'facebook', label: 'Facebook', value: S.facebook, href: 'https://facebook.com/' + strip(S.facebook) }) : null,
+  S.instagram ? row({ icon: 'instagram', label: 'Instagram', value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }) : null,
+  S.linkedin ? row({ icon: 'linkedin', label: 'LinkedIn', value: S.linkedin, href: url(S.linkedin) }) : null,
+  S.wechat ? row({ icon: 'wechat', label: 'WeChat', value: S.wechat, action: el => shareOrCopy(el, S.wechat) }) : null,
+  S.whatsapp ? row({ icon: 'whatsapp', label: 'WhatsApp', value: S.whatsapp, href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }) : null,
+  S.telegram ? row({ icon: 'telegram', label: 'Telegram', value: S.telegram, href: 'https://t.me/' + strip(S.telegram) }) : null,
+  S.other ? row({ icon: 'link', label: 'Other link', value: S.other, href: url(S.other) }) : null,
+  S.viber ? row({ icon: 'phone', label: 'Viber', value: S.viber, href: 'tel:' + digits(S.viber) }) : null
+].filter(Boolean);
 
-  details.append(
-    row({ icon: 'user',    label: 'Name',           value: P.name }),
-    row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
-    row({ icon: 'job',     label: 'Position',       value: P.position }),
-    row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
-    row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
-    row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
-    row({ icon: 'company', label: 'Company',        value: P.company }),
-    row({ icon: 'pin',     label: 'Address',        value: P.address,
-          href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-    row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
-    row({ icon: 'user',    label: 'Bio',            value: P.bio })
-  );
-
-  socials.append(
-    row({ icon: 'facebook',  label: 'Facebook',   value: S.facebook,  href: 'https://facebook.com/' + strip(S.facebook) }),
-    row({ icon: 'instagram', label: 'Instagram',  value: S.instagram, href: 'https://instagram.com/' + strip(S.instagram) }),
-    row({ icon: 'linkedin',  label: 'LinkedIn',   value: S.linkedin,  href: url(S.linkedin) }),
-    row({ icon: 'wechat',    label: 'WeChat',     value: S.wechat,    action: el => shareOrCopy(el, S.wechat) }),
-    row({ icon: 'whatsapp',  label: 'WhatsApp',   value: S.whatsapp,  href: 'https://wa.me/' + digits(S.whatsapp).replace('+', '') }),
-    row({ icon: 'telegram',  label: 'Telegram',   value: S.telegram,  href: 'https://t.me/' + strip(S.telegram) }),
-    row({ icon: 'link',      label: 'Other link', value: S.other,     href: url(S.other) })
-  );
-}
-
-renderProfileView();
-loadRemoteProfile();
+document.getElementById('socials').append(...socialEntries);
 
 /* ---------- Follow toggle ---------- */
 const follow = document.getElementById('follow');
