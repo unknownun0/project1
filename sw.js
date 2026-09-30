@@ -1,9 +1,8 @@
 // Service Worker for offline caching
-const CACHE_NAME = 'profile-card-v1';
+const CACHE_NAME = 'profile-card-v2';
 const ASSETS = [
   '/',
   '/index.html',
-  '/edit.html',
   '/manifest.json',
   '/config.js',
   '/University_of_Perpetual_Help_System_DALTA_logo.png',
