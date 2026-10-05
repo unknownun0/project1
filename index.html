@@ -230,7 +230,7 @@
 </main>
 
 <script>
-/* ---------- Default placeholder data (overridden by edit.html) ---------- */
+/* ---------- Default profile data ---------- */
 const normalizePhotoPath = value => {
   if (!value || typeof value !== 'string') return '';
   const cleaned = value.replace(/\\/g, '/').trim();
@@ -241,27 +241,34 @@ const normalizePhotoPath = value => {
   return cleaned.replace(/^\/+/, '');
 };
 
-const STORAGE_KEY = 'profile-card';
+const STORAGE_KEY = 'profile-card-ariel-olveros-v2';
 const DEFAULTS = {
   name: 'ENGR. ARIEL F. OLVEROS, REE, RME, MEngEE',
   nickname: 'Engr. Ariel',
   position: 'Registered Electrical Engineer',
   company: 'Electrical AND Electronics Engineering Institute University of the Philippines Diliman',
   bio: 'Master of Engineering in Electrical Engineering (Power Systems)',
+  contact1Label: 'CONTACT',
+  contact1Value: '0917-509-9536',
+  contact2Label: 'VIBER',
+  contact2Value: '0998-599-6758',
   contact3Label: 'Mobile',
-  contact3Value: '+63 917 509  9536',
-  address: 'Las Piñas City, Philippines 1740',
+  contact3Value: '+63 917 509 9536',
+  address: 'Electrical AND Electronics Engineering Institute, University of the Philippines Diliman',
   email: 'eng.afolveros@gmail.com',
-  email: 'afolveros@up.edu.ph'
-  photo: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/UPHSD_Logo.png',
+  email2: 'AFolveros@up.edu.ph',
+  photo: 'profile.jpg',
   social: {
     facebook: 'https://www.facebook.com/share/1FKYUX9v28/?mibextid=wwXIfr',
+    instagram: '',
     linkedin: 'https://www.linkedin.com/in/engr-ariel-f-olveros',
+    wechat: '',
     whatsapp: '+63 917 568 4262',
     telegram: '',
-
-    viber: ''
+    other: '',
+    viber: '0998-599-6758'
   }
+}
 };
 
 function loadProfile() {
@@ -275,7 +282,7 @@ function loadProfile() {
 
   const cleanProfile = {
     ...finalProfile,
-    photo: normalizePhotoPath(finalProfile.photo || DEFAULTS.photo),
+    photo: normalizePhotoPath(DEFAULTS.photo),
     social: { ...DEFAULTS.social, ...(finalProfile.social || {}) }
   };
 
@@ -383,12 +390,16 @@ document.getElementById('details').append(
   row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
   row({ icon: 'company', label: 'Company',        value: P.company }),
   row({ icon: 'job',     label: 'Position',       value: P.position }),
-  row({ icon: 'phone',   label: P.contact1Label || 'Contact 1', value: P.contact1Value || '—', href: P.contact1Value ? 'tel:' + digits(P.contact1Value) : undefined }),
-  row({ icon: 'phone',   label: P.contact2Label || 'Contact 2', value: P.contact2Value || '—', href: P.contact2Value ? 'tel:' + digits(P.contact2Value) : undefined }),
-  row({ icon: 'phone',   label: P.contact3Label || 'Contact 3', value: P.contact3Value || '—', href: P.contact3Value ? 'tel:' + digits(P.contact3Value) : undefined }),
+  ...[P.contact1Value, P.contact2Value, P.contact3Value].map((value, index) => value ? row({
+    icon: 'phone',
+    label: P['contact' + (index + 1) + 'Label'] || 'Contact ' + (index + 1),
+    value,
+    href: 'tel:' + digits(value)
+  }) : []),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email })
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
+  row({ icon: 'mail',    label: 'UP email',       value: P.email2, href: 'mailto:' + P.email2 })
 );
 
 const socialEntries = [
