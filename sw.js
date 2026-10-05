@@ -1,5 +1,5 @@
 // Service Worker for offline caching
-const CACHE_NAME = 'profile-card-v2';
+const CACHE_NAME = 'profile-card-v3';
 const ASSETS = [
   '/',
   '/index.html',
