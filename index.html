@@ -254,11 +254,7 @@ const DEFAULTS = {
   address: 'Electrical AND Electronics Engineering Institute, University of the Philippines Diliman',
   email: 'eng.afolveros@gmail.com',
   email2: 'AFolveros@up.edu.ph',
-  facebook: 'https://www.facebook.com/share/1FKYUX9v28/?mibextid=wwXIfr',
-    facebookPage: 'https://www.facebook.com/p/Ariel-Balladeer-Music-100094244526127/',
-    linkedin: 'https://www.linkedin.com/in/engr-ariel-f-olveros',
-    Youtube: 'https://youtube.com/@arielf.olveros7248?si=Vzuld5B3-kCYXXVv',
-    whatsapp: '+63 917 509 9536',
+ 
   photo: 'profile.jpg',
   social: {
     facebook: 'https://www.facebook.com/share/1FKYUX9v28/?mibextid=wwXIfr',
@@ -281,7 +277,15 @@ function loadProfile() {
   const cleanProfile = {
     ...finalProfile,
     photo: normalizePhotoPath(DEFAULTS.photo),
-    social: { ...DEFAULTS.social, ...(finalProfile.social || {}) }
+    social: {
+      ...DEFAULTS.social,
+      ...(finalProfile.social || {}),
+      facebook: DEFAULTS.social.facebook,
+      facebookPage: DEFAULTS.social.facebookPage,
+      linkedin: DEFAULTS.social.linkedin,
+      Youtube: DEFAULTS.social.Youtube,
+      whatsapp: DEFAULTS.social.whatsapp
+    }
   };
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanProfile));
@@ -346,6 +350,7 @@ const ICONS = {
   linkedin: svg('<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>'),
   wechat: svg('<path d="M9 4C5.4 4 2.5 6.3 2.5 9.2c0 1.6.9 3.1 2.3 4L4.3 15.5l2.4-1.2c.5.1 1 .2 1.5.2"/><path d="M21.5 14.2c0-2.6-2.5-4.7-5.5-4.7s-5.5 2.1-5.5 4.7 2.5 4.7 5.5 4.7c.7 0 1.3-.1 1.9-.3l2 1-.4-2c1.1-.8 2-2 2-3.4z"/>'),
   whatsapp: svg('<path d="M3 21l1.65-4.9A9 9 0 1 1 8 19.4L3 21z"/><path d="M9 9c0 3.5 3 6.5 6 6l1-1.5-2-1-1 .8c-1-.5-1.8-1.3-2.3-2.3l.8-1-1-2z"/>'),
+  youtube: svg('<path d="M22 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.5a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.5a2.5 2.5 0 0 0 1.8-1.8C22 15.2 22 12 22 12z"/><path d="m10 9 5 3-5 3z"/>'),
   telegram: svg('<path d="M22 3L2 11l7 2.5L11.5 21l3-5 5 3.5L22 3z"/><path d="M9 13.5L22 3"/>'),
   link: svg('<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>')
 };
@@ -385,6 +390,37 @@ async function shareOrCopy(el, text) {
   } catch (e) { /* share cancelled or clipboard unavailable */ }
 }
 
+function saveContact() {
+  const escapeVCard = value => String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${escapeVCard(P.name)}`,
+    'N:OLVEROS;ARIEL F.;;;',
+    `ORG:${escapeVCard(P.company)}`,
+    `TITLE:${escapeVCard(P.position)}`,
+    `NOTE:${escapeVCard(P.bio)}`,
+    ...[...new Set([P.contact1Value, P.contact2Value, P.contact3Value].filter(Boolean))].map(value => `TEL;TYPE=CELL:${escapeVCard(value)}`),
+    `EMAIL;TYPE=INTERNET:${escapeVCard(P.email)}`,
+    `EMAIL;TYPE=INTERNET:${escapeVCard(P.email2)}`,
+    `ADR;TYPE=WORK:;;${escapeVCard(P.address)};;;;`,
+    `URL:${escapeVCard(P.social.facebook)}`,
+    `X-SOCIALPROFILE;TYPE=facebook:${escapeVCard(P.social.facebook)}`,
+    `X-SOCIALPROFILE;TYPE=facebook:${escapeVCard(P.social.facebookPage)}`,
+    `X-SOCIALPROFILE;TYPE=linkedin:${escapeVCard(P.social.linkedin)}`,
+    `X-SOCIALPROFILE;TYPE=youtube:${escapeVCard(P.social.Youtube)}`,
+    `X-SOCIALPROFILE;TYPE=whatsapp:https://wa.me/${digits(P.social.whatsapp).replace(/^\+/, '')}`,
+    'END:VCARD'
+  ].filter(line => !line.endsWith(':'));
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
+  const downloadUrl = URL.createObjectURL(blob);
+  const download = document.createElement('a');
+  download.href = downloadUrl;
+  download.download = `${(P.nickname || 'contact').replace(/[^a-z0-9-_]+/gi, '-')}.vcf`;
+  download.click();
+  setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+}
+
 const P = PROFILE, S = PROFILE.social;
 document.getElementById('heroName').textContent = P.name;
 document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
@@ -393,6 +429,7 @@ const companyName = P.company || 'University of Perpetual Help';
 document.getElementById('companyStatA').textContent = companyName;
 
 document.getElementById('details').append(
+  row({ icon: 'user', label: 'Save contact', value: 'Add to contacts', action: saveContact }),
   row({ icon: 'user',    label: 'Name',           value: P.name }),
   row({ icon: 'user',    label: 'Bio',            value: P.bio }),
   row({ icon: 'nick',    label: 'Nickname',       value: P.nickname }),
@@ -411,8 +448,11 @@ document.getElementById('details').append(
 );
 
 const socialEntries = [
-  S.wechat ? row({ icon: 'wechat', label: 'WeChat', value: S.wechat, action: el => shareOrCopy(el, S.wechat) }) : null,
-  S.viber ? row({ icon: 'phone', label: 'Viber', value: S.viber, href: 'tel:' + digits(S.viber) }) : null
+  S.facebook ? row({ icon: 'facebook', label: 'Facebook', value: S.facebook, href: S.facebook }) : null,
+  S.facebookPage ? row({ icon: 'facebook', label: 'Facebook page', value: S.facebookPage, href: S.facebookPage }) : null,
+  S.linkedin ? row({ icon: 'linkedin', label: 'LinkedIn', value: S.linkedin, href: S.linkedin }) : null,
+  S.Youtube ? row({ icon: 'youtube', label: 'YouTube', value: S.Youtube, href: S.Youtube }) : null,
+  S.whatsapp ? row({ icon: 'whatsapp', label: 'WhatsApp', value: S.whatsapp, href: 'https://wa.me/' + digits(S.whatsapp).replace(/^\+/, '') }) : null
 ].filter(Boolean);
 
 document.getElementById('socials').append(...socialEntries);
