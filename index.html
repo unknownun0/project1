@@ -455,7 +455,8 @@ document.getElementById('details').append(
   }) : []),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'email',          value: P.email,  href: 'mailto:' + P.email }),
+  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
+  row({ icon: 'mail',    label: 'UP email',       value: P.email2, href: 'mailto:' + P.email2 })
 );
 
 const socialEntries = [
