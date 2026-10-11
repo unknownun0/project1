@@ -2,7 +2,7 @@
 const CACHE_NAME = 'profile-card-v3';
 const ASSETS = [
   '/',
-  '/index.html',
+  '/index.html',f
   '/manifest.json',
   '/config.js',
   '/University_of_Perpetual_Help_System_DALTA_logo.png',
