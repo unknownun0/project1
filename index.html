@@ -113,7 +113,7 @@
   }
   .stat { text-align: center; padding: 0 12px; }
   .stat + .stat { display: none; }
-  .stat b { display: block; font-size: 18px; line-height: 1.2; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .stat b { display: block; font-size: 18px; line-height: 1.2; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; white-space: pre-line; }
   .stat span { display: block; margin-top: 2px; font-size: 12px; color: #d8c5c8; }
 
   .follow {
@@ -166,7 +166,7 @@
   .ico svg { width: 20px; height: 20px; }
   .txt { flex: 1; min-width: 0; }
   .lbl { display: block; font-size: 12px; color: var(--muted); }
-  .val { display: block; margin-top: 1px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+  .val { display: block; margin-top: 1px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; white-space: pre-line; }
   .go { flex: none; color: #b3afbf; }
   .go svg { width: 18px; height: 18px; }
 
@@ -191,10 +191,6 @@
     <div class="shade"></div>
     <div class="dim"></div>
 
-    <div class="topbar">
-      <button class="glass round" type="button" aria-label="Back" data-icon="back"></button>
-    </div>
-
     <div class="info">
       <h1 class="name" id="heroName"></h1>
       <div class="handle">
@@ -206,7 +202,7 @@
       </div>
 
       <div class="stats">
-        <div class="stat"><b id="companyStatA">REGISTERED ELECTRICAL ENGINEER</b><span></span></div>
+        <div class="stat"><b id="companyStatA"></b><span><br></span></div>
       </div>
 
       <button class="follow" id="follow" type="button" aria-pressed="false">Message</button>
@@ -247,20 +243,20 @@ const DEFAULTS = {
   name: 'ENGR. ARIEL F. OLVEROS, REE, RME, MEngEE',
   nickname: 'Engr. Ariel',
   position: 'Registered Electrical Engineer',
-  company: 'Electrical and Electronics Engineering Institute University of the Philippines Diliman',
+  company: 'Electrical and Electronics\nEngineering Institute\nUniversity of the Philippines Diliman',
   bio: 'Master of Engineering in Electrical Engineering (Power Systems)',
   contact1Label: 'CONTACT',
-  contact1Value: '0917-509-9536',
-  address: 'Electrical and Electronics Engineering Institute, University of the Philippines Diliman',
+  contact1Value: '+63 917 509 9536',
+  address: 'Alabang-Zapote Road, Pamplona 3, Las Piñas City, Philippines 1740',
   email: 'eng.afolveros@gmail.com',
   email2: 'afolveros@up.edu.ph',
- 
+  
   photo: 'profile.jpg',
   social: {
-    facebook: 'https://www.facebook.com/share/1FKYUX9v28/?mibextid=wwXIfr',
+    facebook: 'https://www.facebook.com/ariel.olveros?mibextid=wwXIfr&rdid=Nb2zvsM0TAMuTz7E&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1FKYUX9v28%2F%3Fmibextid%3DwwXIfr#',
     facebookPage: 'https://www.facebook.com/p/Ariel-Balladeer-Music-100094244526127/',
     linkedin: 'https://www.linkedin.com/in/engr-ariel-f-olveros',
-    Youtube: 'https://youtube.com/@arielf.olveros7248?si=Vzuld5B3-kCYXXVv',
+    Youtube: 'https://www.youtube.com/@arielf.olveros7248?si=Vzuld5B3-kCYXXVv',
     whatsapp: '+63 917 509 9536'
   }
 };
@@ -270,8 +266,18 @@ function loadProfile() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { return null; }
   })();
 
+  const savedCompany = typeof saved?.company === 'string'
+    ? saved.company.replace(/<br\s*\/?>|\s+/gi, ' ').trim().toLowerCase()
+    : '';
+  const previousCompany = 'electrical and electronics engineering institute university of the philippines diliman';
   const finalProfile = saved && typeof saved === 'object'
-    ? { ...DEFAULTS, ...saved, photo: normalizePhotoPath(saved.photo || DEFAULTS.photo), social: { ...DEFAULTS.social, ...(saved.social || {}) } }
+    ? {
+        ...DEFAULTS,
+        ...saved,
+        company: savedCompany === previousCompany ? DEFAULTS.company : saved.company || DEFAULTS.company,
+        photo: normalizePhotoPath(saved.photo || DEFAULTS.photo),
+        social: { ...DEFAULTS.social, ...(saved.social || {}) }
+      }
     : { ...DEFAULTS, photo: normalizePhotoPath(DEFAULTS.photo) };
 
   const cleanProfile = {
@@ -352,6 +358,7 @@ const ICONS = {
   whatsapp: svg('<path d="M3 21l1.65-4.9A9 9 0 1 1 8 19.4L3 21z"/><path d="M9 9c0 3.5 3 6.5 6 6l1-1.5-2-1-1 .8c-1-.5-1.8-1.3-2.3-2.3l.8-1-1-2z"/>'),
   youtube: svg('<path d="M22 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.5a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.5a2.5 2.5 0 0 0 1.8-1.8C22 15.2 22 12 22 12z"/><path d="m10 9 5 3-5 3z"/>'),
   telegram: svg('<path d="M22 3L2 11l7 2.5L11.5 21l3-5 5 3.5L22 3z"/><path d="M9 13.5L22 3"/>'),
+    viber: svg('<path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.45.97 4.68 2.55 6.33L3.5 21l3.59-1.04C8.5 20.5 10.21 21 12 21c5.52 0 10-4.14 10-9.25S17.52 2 12 2zm5.72 12.87c-.24.64-1.39 1.22-1.92 1.28-.5.06-1.14.22-3.9-1.02-1.49-.66-2.48-2.18-2.56-2.28-.08-.11-1.01-1.35-1.01-2.58 0-1.23.64-1.83.87-2.08.23-.25.5-.31.67-.31.17 0 .34 0 .48.01.15.01.36-.06.56.42.21.5.71 1.74.78 1.87.06.12.11.27.02.43-.09.16-.14.26-.28.43-.14.17-.3.38-.43.51-.14.14-.29.3-.12.59.17.29.77 1.28 1.65 2.07 1.13 1.01 2.08 1.32 2.37 1.47.29.15.46.13.63-.07.17-.2.72-.84.91-1.13.19-.29.38-.24.64-.14.26.1 1.65.78 1.93.92.28.14.47.21.54.33.07.12.07.7-.17 1.34z"/>'),
   link: svg('<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>')
 };
 document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = ICONS[el.dataset.icon]; });
@@ -396,7 +403,7 @@ function saveContact() {
     'BEGIN:VCARD',
     'VERSION:3.0',
     `FN:${escapeVCard(P.name)}`,
-    'N:OLVEROS;ARIEL F.;;;',
+    'N:ariel ;;;',
     `ORG:${escapeVCard(P.company)}`,
     `TITLE:${escapeVCard(P.position)}`,
     `NOTE:${escapeVCard(P.bio)}`,
@@ -409,6 +416,9 @@ function saveContact() {
     `X-SOCIALPROFILE;TYPE=facebook:${escapeVCard(P.social.facebookPage)}`,
     `X-SOCIALPROFILE;TYPE=linkedin:${escapeVCard(P.social.linkedin)}`,
     `X-SOCIALPROFILE;TYPE=youtube:${escapeVCard(P.social.Youtube)}`,
+    `X-SOCIALPROFILE;TYPE=instagram:${escapeVCard(P.social.instagram)}`,
+    `X-SOCIALPROFILE;TYPE=telegram:${escapeVCard(P.social.telegram)}`,
+    `X-SOCIALPROFILE;TYPE=viber:${escapeVCard(P.social.viber)}`,
     `X-SOCIALPROFILE;TYPE=whatsapp:https://wa.me/${digits(P.social.whatsapp).replace(/^\+/, '')}`,
     'END:VCARD'
   ].filter(line => !line.endsWith(':'));
@@ -425,7 +435,7 @@ const P = PROFILE, S = PROFILE.social;
 document.getElementById('heroName').textContent = P.name;
 document.getElementById('heroHandle').textContent = '@' + P.nickname.toLowerCase().replace(/\s+/g, '');
 
-const companyName = P.company || 'University of Perpetual Help';
+const companyName = P.company || 'University of Perpetual Help DALTA';
 document.getElementById('companyStatA').textContent = companyName;
 
 document.getElementById('details').append(
@@ -443,16 +453,17 @@ document.getElementById('details').append(
   }) : []),
   row({ icon: 'pin',     label: 'Address',        value: P.address,
         href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(P.address) }),
-  row({ icon: 'mail',    label: 'Gmail',          value: P.email,  href: 'mailto:' + P.email }),
-  row({ icon: 'mail',    label: 'UP email',       value: P.email2, href: 'mailto:' + P.email2 })
+  row({ icon: 'mail',    label: 'email',          value: P.email,  href: 'mailto:' + P.email }),
 );
 
 const socialEntries = [
+  S.whatsapp ? row({ icon: 'whatsapp', label: 'WhatsApp', value: S.whatsapp, href: 'https://wa.me/' + digits(S.whatsapp).replace(/^\+/, '') }) : null,
+  S.viber ? row({ icon: 'viber', label: 'Viber', value: S.viber, href: 'https://viber.com/' + digits(S.viber).replace(/^\+/, '') }) : null,
   S.facebook ? row({ icon: 'facebook', label: 'Facebook', value: S.facebook, href: S.facebook }) : null,
-  S.facebookPage ? row({ icon: 'facebook', label: 'Facebook page', value: S.facebookPage, href: S.facebookPage }) : null,
+  S.facebookPage ? row({ icon: 'facebook', label: 'Facebook Page', value: S.facebookPage, href: S.facebookPage }) : null,
+  S.instagram ? row({ icon: 'instagram', label: 'Instagram', value: S.instagram, href: S.instagram }) : null,
   S.linkedin ? row({ icon: 'linkedin', label: 'LinkedIn', value: S.linkedin, href: S.linkedin }) : null,
-  S.Youtube ? row({ icon: 'youtube', label: 'YouTube', value: S.Youtube, href: S.Youtube }) : null,
-  S.whatsapp ? row({ icon: 'whatsapp', label: 'WhatsApp', value: S.whatsapp, href: 'https://wa.me/' + digits(S.whatsapp).replace(/^\+/, '') }) : null
+  S.youtube ? row({ icon: 'youtube', label: 'YouTube', value: S.youtube, href: S.youtube }) : null
 ].filter(Boolean);
 
 document.getElementById('socials').append(...socialEntries);
