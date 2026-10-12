@@ -283,6 +283,8 @@ function loadProfile() {
 
   const cleanProfile = {
     ...finalProfile,
+    email: String(finalProfile.email || DEFAULTS.email).trim().toLowerCase(),
+    email2: String(finalProfile.email2 || DEFAULTS.email2).trim().toLowerCase(),
     photo: normalizePhotoPath(DEFAULTS.photo),
     social: {
       ...DEFAULTS.social,
